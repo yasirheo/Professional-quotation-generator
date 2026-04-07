@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reliance Engineering Quote Builder</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+</head>
+<body>
+    <div class="shell">
+        <section class="hero">
+            <div class="panel hero-copy">
+                <small class="muted">Offline-ready quotation and BOQ builder</small>
+                <h1>Professional quotation workflow rebuilt for daily use.</h1>
+                <p>Create category-wise quotations with reusable item libraries, selectable specs like <strong>5x5</strong>, <strong>10x10</strong>, <strong>1kg</strong>, <strong>1L</strong>, editable custom rows, grouped subtotals, and polished print-ready output for RELIANCE ENGINEERING.</p>
+                <div class="hero-badges">
+                    <span class="badge">Local storage persistence</span>
+                    <span class="badge">Custom categories and subcategories</span>
+                    <span class="badge">Print / PDF / DOCX / JSON import/export</span>
+                    <span class="badge">Dark and light mode</span>
+                </div>
+                <div class="toolbar">
+                    <button class="btn-primary" id="printButton">Print / Save PDF</button>
+                    <button class="btn-secondary" id="docxButton">Export DOCX</button>
+                    <button class="btn-secondary" id="jsonButton">Export JSON</button>
+                    <button class="btn-secondary" id="importFileButton">Import PDF / Word / JSON</button>
+                    <button class="btn-secondary" id="uploadLogoButton">Upload Logo</button>
+                    <button class="btn-secondary" id="themeButton">Toggle Theme</button>
+                    <input id="importFileInput" type="file" accept=".pdf,.docx,.json" class="hidden">
+                    <input id="logoInput" type="file" accept="image/*" class="hidden">
+                </div>
+            </div>
+            <div class="panel quote-card">
+                <small>Reliance Engineering</small>
+                <h2>QUOTE</h2>
+                <p id="heroQuoteTo">To: Customer Name</p>
+                <p id="heroQuoteProposal">Proposal details will appear here</p>
+                <p id="heroQuoteDate">Current Date</p>
+            </div>
+        </section>
+
+        <aside class="panel library-panel">
+            <div class="panel-head">
+                <h2>Library</h2>
+                <p class="muted">Main categories, subcategories, saved items, and reusable spec options.</p>
+            </div>
+            <div class="panel-body stack library-layout">
+                <div class="field">
+                    <label for="librarySearch">Search</label>
+                    <input id="librarySearch" type="text" placeholder="Search solar, structure, inverter...">
+                </div>
+                <div class="library-tabs" id="libraryTabs"></div>
+                <div class="inline-actions">
+                    <button class="btn-primary" id="addCategoryButton">Add Category</button>
+                    <button class="btn-secondary" id="addSubcategoryButton">Add Subcategory</button>
+                    <button class="btn-secondary" id="addItemButton">Add Item</button>
+                    <button class="btn-secondary" id="addSpecButton">Add Spec</button>
+                </div>
+                <p class="muted compact-note">Choose one main category, then view every subcategory and full item description in one simple list.</p>
+                <div class="tree library-tree" id="libraryTree"></div>
+                <div class="status" id="libraryStatus"></div>
+            </div>
+        </aside>
+
+        <section class="panel">
+            <div class="panel-head">
+                <h2>Quote Builder</h2>
+                <p class="muted">Add rows quickly, reuse saved library entries, and edit price or spec without losing structure.</p>
+            </div>
+            <div class="panel-body stack">
+                <div class="control-grid">
+                    <div class="field"><label for="preparedBy">Prepared By</label><input id="preparedBy" type="text" placeholder="Muhammad Ali"></div>
+                    <div class="field"><label for="preparedPhone">Phone</label><input id="preparedPhone" type="text" placeholder="03228233602"></div>
+                    <div class="field"><label for="preparedEmail">Email</label><input id="preparedEmail" type="email" placeholder="contact@intechnosol.com"></div>
+                    <div class="field"><label for="quoteDate">Quote Date</label><input id="quoteDate" type="text"></div>
+                    <div class="field"><label for="quoteTo">To</label><input id="quoteTo" type="text" placeholder="Customer Name / Yasir Abbas"></div>
+                    <div class="field"><label for="quoteCity">City</label><input id="quoteCity" type="text" placeholder="Karachi"></div>
+                    <div class="field full"><label for="proposalFor">Proposal For</label><textarea id="proposalFor" placeholder="Write project or quotation subject here"></textarea></div>
+                </div>
+
+                <div class="control-grid">
+                    <div class="field"><label for="categorySelect">Main Category</label><select id="categorySelect"></select></div>
+                    <div class="field"><label for="subcategorySelect">Subcategory</label><select id="subcategorySelect"></select></div>
+                    <div class="field">
+                        <label for="itemSearchInput">Saved Item Finder</label>
+                        <input id="itemSearchInput" type="text" placeholder="Type item name to filter current subcategory">
+                        <div class="picker-results" id="itemQuickList"></div>
+                        <select id="itemSelect" class="hidden"></select>
+                    </div>
+                    <div class="field full"><label for="descriptionInput">Description</label><textarea id="descriptionInput" placeholder="Choose a saved item or write a custom description."></textarea></div>
+                    <div class="field">
+                        <label for="specInput">Spec / Unit</label>
+                        <input id="specInput" list="specOptionsList" placeholder="Select or type custom spec / unit">
+                        <datalist id="specOptionsList"></datalist>
+                    </div>
+                    <div class="field"><label for="quantityInput">Quantity</label><input id="quantityInput" type="number" min="0.01" step="0.01" value="1"></div>
+                    <div class="field"><label for="unitPriceInput">Unit Price</label><input id="unitPriceInput" type="number" min="0" step="0.01" placeholder="0.00"></div>
+                    <div class="field"><label for="saveToLibraryCheckbox">Save Custom Item</label><select id="saveToLibraryCheckbox"><option value="no">No</option><option value="yes">Yes</option></select></div>
+                </div>
+
+                <div class="inline-actions">
+                    <button class="btn-primary" id="addLineButton">Add Line Item</button>
+                    <button class="btn-secondary" id="updateLineButton" disabled>Update Selected Row</button>
+                    <button class="btn-secondary" id="clearFormButton">Clear Entry</button>
+                    <button class="btn-link" id="quickSaveItemButton">Save Item Only</button>
+                </div>
+
+                <div class="control-grid">
+                    <div class="field"><label for="discountInput">Discount</label><input id="discountInput" type="number" min="0" step="0.01" value="0"></div>
+                    <div class="field"><label for="discountType">Discount Type</label><select id="discountType"><option value="amount">Amount</option><option value="percent">Percent</option></select></div>
+                    <div class="field"><label for="taxInput">Tax</label><input id="taxInput" type="number" min="0" step="0.01" value="0"></div>
+                    <div class="field"><label for="taxType">Tax Type</label><select id="taxType"><option value="amount">Amount</option><option value="percent">Percent</option></select></div>
+                </div>
+
+                <div class="inline-actions">
+                    <button class="btn-secondary" id="duplicateLineButton" disabled>Duplicate Selected</button>
+                    <button class="btn-danger" id="deleteLineButton" disabled>Delete Selected</button>
+                    <button class="btn-danger" id="clearAllButton">Clear Full Quote</button>
+                </div>
+                <div class="status" id="builderStatus"></div>
+            </div>
+        </section>
+
+        <section class="panel wide">
+            <div class="panel-head">
+                <h2>Grouped Line Items</h2>
+                <p class="muted">Serial numbers stay clean, rows stay editable, and category subtotals update instantly.</p>
+            </div>
+            <div class="panel-body">
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>S/N</th>
+                                <th>Main Category</th>
+                                <th>Subcategory</th>
+                                <th>Description</th>
+                                <th>Spec / Unit</th>
+                                <th class="center">Qty</th>
+                                <th class="num">Unit Price</th>
+                                <th class="num">Total</th>
+                                <th class="num">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="quoteTableBody"></tbody>
+                    </table>
+                </div>
+                <div class="summary-grid">
+                    <div class="summary-card"><span class="muted">Subtotal</span><strong id="subtotalCard">0.00</strong></div>
+                    <div class="summary-card"><span class="muted">Discount</span><strong id="discountCard">0.00</strong></div>
+                    <div class="summary-card"><span class="muted">Tax</span><strong id="taxCard">0.00</strong></div>
+                    <div class="summary-card"><span class="muted">Grand Total</span><strong id="grandTotalCard">0.00</strong></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel print-panel full-width">
+            <div class="panel-head">
+                <h2>Print Preview</h2>
+                <p class="muted">This area is the final layout used for print and browser PDF save.</p>
+            </div>
+            <div class="panel-body">
+                <div class="print-sheet" id="printSheet">
+                    <div class="print-header">
+                        <div class="logo-box">
+                            <img id="printLogo" src="" alt="Logo" class="hidden">
+                            <span id="logoFallback">LOGO</span>
+                        </div>
+                        <div>
+                            <div class="muted">Professional Quotation</div>
+                            <div class="print-title" id="printCompanyName">RELIANCE ENGINEERING</div>
+                            <div id="printCompanyLine1">Interactive Techno Solution Pvt. Ltd.</div>
+                            <div id="printCompanyLine2">Muhammad Ali</div>
+                            <div id="printCompanyLine3">03228233602 | contact@intechnosol.com</div>
+                        </div>
+                    </div>
+                    <div class="print-meta">
+                        <div class="print-meta-box"><div class="label">Body Info</div><div id="printBodyInfo"></div></div>
+                        <div class="print-meta-box"><div class="label">Date</div><div id="printDateBox"></div></div>
+                    </div>
+                    <table class="print-table">
+                        <thead>
+                            <tr>
+                                <th>S/N</th>
+                                <th>Category</th>
+                                <th>Subcategory</th>
+                                <th>Description</th>
+                                <th>Spec / Unit</th>
+                                <th>Qty</th>
+                                <th>Unit Price</th>
+                                <th>Total Price</th>
+                            </tr>
+                        </thead>
+                        <tbody id="printTableBody"></tbody>
+                    </table>
+                    <div class="print-total-box">
+                        <table>
+                            <tbody>
+                                <tr><td>Subtotal</td><td class="num" id="printSubtotal"></td></tr>
+                                <tr><td>Discount</td><td class="num" id="printDiscount"></td></tr>
+                                <tr><td>Tax</td><td class="num" id="printTax"></td></tr>
+                                <tr><td>Total Amount</td><td class="num" id="printGrandTotal"></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="terms">
+                        <h4>Terms and Conditions:</h4>
+                        <div id="printTerms"></div>
+                        <div class="closing" id="printClosing"></div>
+                    </div>
+                    <div class="print-footer">
+                        <div id="printFooterLine1">Plot 11C, Lane 1, Sehar Commercial, DHA Phase 6, Karachi</div>
+                        <div id="printFooterLine2">T: +92 353 4844 545   E: contact@intechnosol.com   W: intechnosol.com</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <dialog id="categoryDialog">
+        <form method="dialog">
+            <div class="dialog-head"><h3>Add Main Category</h3><button class="btn-link" value="cancel">Close</button></div>
+            <div class="dialog-body stack">
+                <div class="field"><label for="newCategoryName">Category Name</label><input id="newCategoryName" type="text" placeholder="Example: CIVIL WORKS"></div>
+                <div class="field"><label for="newCategoryColor">Category Accent Color</label><input id="newCategoryColor" type="text" placeholder="#475569"></div>
+            </div>
+            <div class="dialog-foot"><button class="btn-secondary" value="cancel">Cancel</button><button class="btn-primary" id="saveCategoryDialogButton" value="default">Save Category</button></div>
+        </form>
+    </dialog>
+
+    <dialog id="subcategoryDialog">
+        <form method="dialog">
+            <div class="dialog-head"><h3>Add Subcategory</h3><button class="btn-link" value="cancel">Close</button></div>
+            <div class="dialog-body stack">
+                <div class="field"><label for="subcategoryCategorySelect">Main Category</label><select id="subcategoryCategorySelect"></select></div>
+                <div class="field"><label for="newSubcategoryName">Subcategory Name</label><input id="newSubcategoryName" type="text" placeholder="Example: Cables"></div>
+            </div>
+            <div class="dialog-foot"><button class="btn-secondary" value="cancel">Cancel</button><button class="btn-primary" id="saveSubcategoryDialogButton" value="default">Save Subcategory</button></div>
+        </form>
+    </dialog>
+
+    <dialog id="specDialog">
+        <form method="dialog">
+            <div class="dialog-head"><h3>Add Spec / Unit Option</h3><button class="btn-link" value="cancel">Close</button></div>
+            <div class="dialog-body stack">
+                <div class="field"><label for="newSpecValue">Spec / Unit</label><input id="newSpecValue" type="text" placeholder="Example: 12x12 or 20L"></div>
+            </div>
+            <div class="dialog-foot"><button class="btn-secondary" value="cancel">Cancel</button><button class="btn-primary" id="saveSpecDialogButton" value="default">Save Option</button></div>
+        </form>
+    </dialog>
+
+    <dialog id="itemDialog">
+        <form method="dialog">
+            <div class="dialog-head"><h3 id="itemDialogTitle">Add Library Item</h3><button class="btn-link" value="cancel">Close</button></div>
+            <div class="dialog-body stack">
+                <input id="editingItemId" type="hidden">
+                <div class="field"><label for="itemDialogCategorySelect">Main Category</label><select id="itemDialogCategorySelect"></select></div>
+                <div class="field"><label for="itemDialogSubcategorySelect">Subcategory</label><select id="itemDialogSubcategorySelect"></select></div>
+                <div class="field"><label for="itemDialogName">Item Name</label><input id="itemDialogName" type="text" placeholder="Example: MC4 Connector"></div>
+                <div class="field"><label for="itemDialogDescription">Description</label><textarea id="itemDialogDescription" placeholder="Short customer-friendly line item description"></textarea></div>
+                <div class="field"><label for="itemDialogSpec">Default Spec / Unit</label><input id="itemDialogSpec" list="specOptionsList" placeholder="Example: 6mm or 5x5"></div>
+                <div class="field"><label for="itemDialogPrice">Default Unit Price</label><input id="itemDialogPrice" type="number" min="0" step="0.01" placeholder="Optional"></div>
+            </div>
+            <div class="dialog-foot"><button class="btn-secondary" value="cancel">Cancel</button><button class="btn-primary" id="saveItemDialogButton" value="default">Save Item</button></div>
+        </form>
+    </dialog>
+
+    <script>window.SEED_DATA = {{ seed_data|tojson }};</script>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
